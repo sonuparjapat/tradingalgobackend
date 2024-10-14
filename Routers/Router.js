@@ -67,6 +67,7 @@ router.get('/quote', checkTokenExpiry, async (req, res) => {
         const token = getInstrumentToken(tradingsymbol);  // Synchronous call since jsondata is already loaded
 
         // Fetch the quote for the stock
+        console.log(smart_api,"smartapi")
         const quote = await smart_api.getQuote({
             exchange: 'NSE',  // Assuming NSE
             tradingsymbol: tradingsymbol,
