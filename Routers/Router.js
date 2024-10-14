@@ -17,7 +17,7 @@ router.get("/login", (req, res) => {
     console.log(smart_api);
 
     const loginUrl = smart_api.getLoginURL({
-        redirect_uri: "http://localhost:3000/main/callback"  // Set the callback URL
+        redirect_uri: "https://tradingalgobackend.onrender.com/main/callback"  // Set the callback URL
     });  // Use the correct method to get login URL
     res.redirect(loginUrl);  // Redirect user to login page
 });
