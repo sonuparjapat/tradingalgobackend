@@ -83,12 +83,12 @@ router.get('/quote', checkTokenExpiry, async (req, res) => {
 });
 
 // /quotes route: Fetch multiple stock quotes at once
-router.get('/quotes', checkTokenExpiry, async (req, res) => {
+router.get('/quotes', async (req, res) => {
     const symbols = req.query.symbols ? req.query.symbols.split(',') : ['GULPOLY', 'TCS'];  // List of symbols
     
     try {
         const tokens = symbols.map(symbol => getInstrumentToken(symbol));  // Fetch tokens for each symbol
-
+console.log(smart_api,"smartapi")
         const quotes = await Promise.all(tokens.map(async (token, index) => {
             return await smart_api.getQuote({
                 exchange: 'NSE',
