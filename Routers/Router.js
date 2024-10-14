@@ -19,7 +19,7 @@ router.get("/login", (req, res) => {
     const loginUrl = smart_api.getLoginURL({
         redirect_uri: "https://tradingalgobackend.onrender.com/main/callback"  // Set the callback URL
     });  // Use the correct method to get login URL
-    res.redirect(loginUrl);  // Redirect user to login page
+    res.redirect(loginUrl); // Redirect user to login page
 });
 
 // Callback route to capture the access token after login
@@ -81,7 +81,21 @@ router.get('/quote', checkTokenExpiry, async (req, res) => {
         res.status(500).send('Error fetching quote: ' + err.message);  // Return the error message
     }
 });
+router.get('/marketData', checkTokenExpiry, async (req, res) => {
+    const tradingsymbol = req.query.symbol || 'GULPOLY';  // Default symbol
+    
+    try {
+        const marketData = await smart_api.marketData({ 
+            exchange: 'NSE', 
+            tradingsymbol: tradingsymbol 
+        });
 
+        res.json(marketData);
+    } catch (err) {
+        console.error("Error fetching market data:", err);
+        res.status(500).send('Error fetching market data: ' + err.message);
+    }
+});
 // /quotes route: Fetch multiple stock quotes at once
 router.get('/quotes', async (req, res) => {
     const symbols = req.query.symbols ? req.query.symbols.split(',') : ['GULPOLY', 'TCS'];  // List of symbols
