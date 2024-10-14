@@ -24,7 +24,7 @@ router.get("/login", (req, res) => {
 
 // Callback route to capture the access token after login
 router.get('/callback', async (req, res) => {
-    accessToken = req.query.access_token;  // Capture access token from query parameters
+    accessToken = req.query.auth_token;  // Capture access token from query parameters
 
     if (!accessToken) {
         return res.status(400).send('Access token not provided.');
