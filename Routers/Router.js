@@ -82,12 +82,16 @@ router.get('/quote', checkTokenExpiry, async (req, res) => {
     }
 });
 router.get('/marketData', checkTokenExpiry, async (req, res) => {
-    const tradingsymbol = req.query.symbol || 'GULPOLY';  // Default symbol
+    const tradingsymbol = req.query.symbol || 'GULPOLY';  
+    const token = getInstrumentToken(tradingsymbol);
+
+    // Default symbol
     
     try {
         const marketData = await smart_api.marketData({ 
             exchange: 'NSE', 
-            tradingsymbol: tradingsymbol 
+            tradingsymbol: tradingsymbol,
+            token: token
         });
 
         res.json(marketData);
