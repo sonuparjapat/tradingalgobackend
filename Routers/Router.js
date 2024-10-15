@@ -81,10 +81,10 @@ router.get('/quote', checkTokenExpiry, async (req, res) => {
         res.status(500).send('Error fetching quote: ' + err.message);  // Return the error message
     }
 });
-router.get('/marketData', checkTokenExpiry, async (req, res) => {
+router.get('/marketData', async (req, res) => {
     const tradingsymbol = req.query.symbol || 'GULPOLY';  
     const token = getInstrumentToken(tradingsymbol);
-
+console.log(token,"token coming fine")
     // Default symbol
     
     try {
