@@ -3,7 +3,9 @@ const express = require("express");
 const { SmartAPI } = require('smartapi-javascript');  // Correct import
 const router = express.Router();
 const jsondata = require("../data/response.json");  // Instrument data (response.json)
-const {getClientInfo}=require("../data/Utility/clientInfo")
+
+var axios = require('axios');
+
 let smart_api = null;
 let accessToken = '';  // Access token stored globally in memory
 
@@ -14,7 +16,7 @@ router.get("/login", (req, res) => {
     });
 
     // Log the smart_api object to inspect its methods (optional)
-    console.log(smart_api);
+
 
     const loginUrl = smart_api.getLoginURL({
         redirect_uri: "https://tradingalgobackend.onrender.com/main/callback"  // Set the callback URL
@@ -59,24 +61,71 @@ const checkTokenExpiry = (req, res, next) => {
 };
 
 // /quote route: Fetch market data for a stock
-router.get('/quote',checkTokenExpiry, async (req, res) => {
+
+const getPublicIP = async () => {
+    try {
+      const response = await axios.get('https://api.ipify.org?format=json');
+      return response.data.ip;  // Returns your public IP address as a string
+    } catch (error) {
+      console.error('Error fetching public IP:', error);
+      return null;  // Return null if there was an error
+    }
+  };
+  const getClientInfo = async () => {
+    return {
+        localIP: smart_api.local_ip, // Replace with actual IP fetching method
+        publicIP: await getPublicIP(), // Fetch public IP dynamically using getPublicIP
+        macAddress: smart_api.mac_addr // You can use the value from the smart_api object or fetch it dynamically
+    };
+};
+router.get('/quote', checkTokenExpiry, async (req, res) => {
     const tradingsymbol = req.query.symbol || 'GULPOLY';  // Default to GULPOLY if no symbol is provided
-const clintdata=await getClientInfo()
-console.log(clintdata,"clinent data")
+
+    // Log client data from smart_api object
+  console.log(smart_api,"smart api data is coming")
+
+    // You can still use `getClientInfo` to fetch public IP if needed
+    const clientInfo = await getClientInfo();
+
     try {
         // Fetch instrument token for the given symbol
         const token = getInstrumentToken(tradingsymbol);  // Synchronous call since jsondata is already loaded
 
         // Fetch the quote for the stock
-        // console.log(smart_api,"smartapi")
-        const quote = await smart_api.getQuote({
-            exchange: 'NSE',  // Assuming NSE
-            tradingsymbol: tradingsymbol,
-            token: token  // Dynamically fetched token
-        });
+        // const quote = await smart_api.getQuote({
+        //     exchange: 'NSE',  // Assuming NSE
+        //     tradingsymbol: tradingsymbol,
+        //     token: token  // Dynamically fetched token
+        // });
 
-        // Send the quote data as a response
-        res.json(quote);
+        // Send the quote data along with client data as a response
+        var data = JSON.stringify({
+            "mode": "FULL",
+            "exchangeTokens": {
+                "NSE": ["3045"]
+            }
+        });
+        const config = {
+            method: 'post',
+            url: 'https://apiconnect.angelone.in/rest/secure/angelbroking/market/v1/quote/',
+            headers: { 
+                'X-PrivateKey': API_KEY,  // Replace with your actual API key
+                'Accept': 'application/json, application/json',
+                'X-SourceID': 'WEB, WEB',  // Assuming this is correct from the Angel API docs
+                'X-ClientLocalIP': clientInfo.localIP,  // Client local IP address
+                'X-ClientPublicIP': clientInfo.publicIP,  // Client public IP address
+                'X-MACAddress': clientInfo.macAddress,  // Client MAC address
+                'X-UserType': 'USER',  // User type for Angel API
+                'Authorization': `Bearer ${AUTHORIZATION_TOKEN}`,  // Bearer token for authorization
+                'Content-Type': 'application/json'
+            },
+            data: data
+        };
+
+        // Make the Axios request
+        const response = await axios(config);
+        res.status(200).json({data:response})
+        
     } catch (err) {
         console.error("Error fetching quote:", err);
         res.status(500).send('Error fetching quote: ' + err.message);  // Return the error message
