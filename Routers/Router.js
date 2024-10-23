@@ -3,7 +3,7 @@ const express = require("express");
 const { SmartAPI } = require('smartapi-javascript');  // Correct import
 const router = express.Router();
 const jsondata = require("../data/response.json");  // Instrument data (response.json)
-const getclintdata=require("../data/Utility/clientInfo")
+const {getClientInfo}=require("../data/Utility/clientInfo")
 let smart_api = null;
 let accessToken = '';  // Access token stored globally in memory
 
@@ -59,9 +59,9 @@ const checkTokenExpiry = (req, res, next) => {
 };
 
 // /quote route: Fetch market data for a stock
-router.get('/quote', async (req, res) => {
+router.get('/quote',checkTokenExpiry, async (req, res) => {
     const tradingsymbol = req.query.symbol || 'GULPOLY';  // Default to GULPOLY if no symbol is provided
-const clintdata=getclintdata()
+const clintdata=getClientInfo()
 console.log(clintdata,"clinent data")
     try {
         // Fetch instrument token for the given symbol
