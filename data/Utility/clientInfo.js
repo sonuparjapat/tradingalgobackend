@@ -2,7 +2,7 @@ const internalIp = require('internal-ip');
 const publicIp = require('public-ip');
 const macaddress = require('macaddress');
 
-export const getClientInfo = async () => {
+ const getClientInfo = async () => {
   try {
     const localIP = await internalIp.v4();
     const publicIP = await publicIp.v4();
@@ -18,3 +18,4 @@ export const getClientInfo = async () => {
     throw new Error('Unable to retrieve client information.');
   }
 };
+module.exports=getClientInfo

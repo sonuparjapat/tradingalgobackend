@@ -1,6 +1,7 @@
 const express = require("express");
 const axios = require("axios");
 const router = express.Router();
+const getClientInfo=require("../data/Utility/clientInfo")
 const jsondata = require("../data/response.json");
 const { getClientInfo } = require("../data/Utility/clientInfo");
 
