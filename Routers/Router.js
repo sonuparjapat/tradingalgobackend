@@ -33,6 +33,7 @@ router.get("/callback", (req, res) => {
 // Fetch quote using Angel One API
 router.get("/quote", checkTokenExpiry, async (req, res) => {
   const tradingsymbol = req.query.symbol || 'GULPOLY';
+  
   const token = jsondata.find(item => item.symbol === tradingsymbol)?.token;
 
   if (!token) {
