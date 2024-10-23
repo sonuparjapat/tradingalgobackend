@@ -116,7 +116,7 @@ router.get('/quote', checkTokenExpiry, async (req, res) => {
                 'X-ClientPublicIP': clientInfo.publicIP,  // Client public IP address
                 'X-MACAddress': clientInfo.macAddress,  // Client MAC address
                 'X-UserType': 'USER',  // User type for Angel API
-                'Authorization': `Bearer ${AUTHORIZATION_TOKEN}`,  // Bearer token for authorization
+                'Authorization': `Bearer ${accessToken}`,  // Bearer token for authorization
                 'Content-Type': 'application/json'
             },
             data: data
