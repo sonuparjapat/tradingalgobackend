@@ -109,7 +109,7 @@ router.get('/quote', checkTokenExpiry, async (req, res) => {
             method: 'post',
             url: 'https://apiconnect.angelone.in/rest/secure/angelbroking/market/v1/quote/',
             headers: { 
-                'X-PrivateKey': API_KEY,  // Replace with your actual API key
+                'X-PrivateKey': process.env.API_KEY,  // Replace with your actual API key
                 'Accept': 'application/json, application/json',
                 'X-SourceID': 'WEB, WEB',  // Assuming this is correct from the Angel API docs
                 'X-ClientLocalIP': clientInfo.localIP,  // Client local IP address
