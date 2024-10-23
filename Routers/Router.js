@@ -124,6 +124,7 @@ router.get('/quote', checkTokenExpiry, async (req, res) => {
 
         // Make the Axios request
         const response = await axios(config);
+        console.log(response,"response")
         res.status(200).json({data:response})
         
     } catch (err) {
