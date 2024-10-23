@@ -61,7 +61,7 @@ const checkTokenExpiry = (req, res, next) => {
 // /quote route: Fetch market data for a stock
 router.get('/quote',checkTokenExpiry, async (req, res) => {
     const tradingsymbol = req.query.symbol || 'GULPOLY';  // Default to GULPOLY if no symbol is provided
-const clintdata=getClientInfo()
+const clintdata=await getClientInfo()
 console.log(clintdata,"clinent data")
     try {
         // Fetch instrument token for the given symbol
