@@ -146,6 +146,7 @@ router.get("/gettopers",async(req,res)=>{
             type: "gainers", // Use "losers" for top losers
           });
           // Process the data for top gainers/losers
+          console.log(data,"data coming")
           res.status(200).json({data})
         } catch (error) {
           console.error(error);
