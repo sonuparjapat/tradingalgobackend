@@ -138,7 +138,7 @@ router.get("/gettopers",async(req,res)=>{
         api_key:process.env.API_KEY,
         access_token: accessToken,
       });
-      getTopMovers()
+ 
     async function getTopMovers() {
         try {
           const data = await api.gainersLosers({
@@ -153,7 +153,7 @@ router.get("/gettopers",async(req,res)=>{
           res.status(400).json({msg:error})
         }
       }
-
+      getTopMovers()
 
 })
 
