@@ -141,7 +141,10 @@ router.get("/gettopers",async(req,res)=>{
       getTopMovers()
     async function getTopMovers() {
         try {
-          const data = await api.getQuote({ exchange: "NSE", symbol: "RELIANCE" });
+          const data = await api.gainersLosers({
+            exchange: "NSE", // or "BSE"
+            type: "gainers", // Use "losers" for top losers
+          });
           // Process the data for top gainers/losers
           res.status(200).json({data})
         } catch (error) {
