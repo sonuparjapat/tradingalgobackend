@@ -1,12 +1,22 @@
 // Router.js (Main Router Logic)
 const express = require("express");
-const { SmartAPI } = require('smartapi-javascript');  // Correct import
+const otplib = require('otplib');
+const { SmartAPI,WebSocket,WebSocketV2 } = require('smartapi-javascript');  // Correct import
 const router = express.Router();
 const jsondata = require("../data/response.json");  // Instrument data (response.json)
 
 var axios = require('axios');
+let smart_api = new SmartAPI({
+	api_key: 'smartapi_key', // PROVIDE YOUR API KEY HERE
+	// OPTIONAL : If user has valid access token and refresh token then it can be directly passed to the constructor.
+	// access_token: "YOUR_ACCESS_TOKEN",
+	// refresh_token: "YOUR_REFRESH_TOKEN"
+});
 
-let smart_api = null;
+
+
+
+
 let accessToken = '';  // Access token stored globally in memory
 
 // Login route to generate the login URL
@@ -62,22 +72,7 @@ const checkTokenExpiry = (req, res, next) => {
 
 // /quote route: Fetch market data for a stock
 
-const getPublicIP = async () => {
-    try {
-      const response = await axios.get('https://api.ipify.org?format=json');
-      return response.data.ip;  // Returns your public IP address as a string
-    } catch (error) {
-      console.error('Error fetching public IP:', error);
-      return null;  // Return null if there was an error
-    }
-  };
-  const getClientInfo = async () => {
-    return {
-        localIP: smart_api.local_ip, // Replace with actual IP fetching method
-        publicIP: await getPublicIP(), // Fetch public IP dynamically using getPublicIP
-        macAddress: smart_api.mac_addr // You can use the value from the smart_api object or fetch it dynamically
-    };
-};
+
 router.get('/quote', checkTokenExpiry, async (req, res) => {
     const tradingsymbol = req.query.symbol || 'GULPOLY';  // Default to GULPOLY if no symbol is provided
 
@@ -132,21 +127,46 @@ console.log(config,"config coming")
         res.status(500).send('Error fetching quote: ' + err.message);  // Return the error message
     }
 });
-router.get('/marketData',checkTokenExpiry, async (req, res) => {
+
+
+
+
+
+router.get("/gettopers",async(req,res)=>{
+    console.log("working")
+    const api = new SmartAPI({
+        api_key:process.env.API_KEY,
+        access_token: accessToken,
+      });
+      getTopMovers()
+    async function getTopMovers() {
+        try {
+          const data = await api.getQuote({ exchange: "NSE", symbol: "RELIANCE" });
+          // Process the data for top gainers/losers
+          res.status(200).json({data})
+        } catch (error) {
+          console.error(error);
+          res.status(400).json({msg:error})
+        }
+      }
+
+
+})
+
+router.get('/marketData', checkTokenExpiry, async (req, res) => {
     const tradingsymbol = req.query.symbol || 'GULPOLY';  
     const token = getInstrumentToken(tradingsymbol);
-console.log(token,"token coming fine")
-    // Default symbol
-    console.log(smart_api,"smart_api")
+
+    console.log("Fetching market data for:", tradingsymbol, token);
     try {
         const marketData = await smart_api.marketData({ 
             exchange: 'NSE', 
             tradingsymbol: tradingsymbol,
             token: token
         });
-        console.log(marketData,"markeet data coming")
 
-        res.json(marketData);
+        console.log("Market Data:", marketData);
+        res.json(marketData);  // Send data back
     } catch (err) {
         console.error("Error fetching market data:", err);
         res.status(500).send('Error fetching market data: ' + err.message);
@@ -163,7 +183,7 @@ console.log(smart_api,"smartapi")
             return await smart_api.getQuote({
                 exchange: 'NSE',
                 tradingsymbol: symbols[index],
-                token: token
+                token: [token]
             });
         }));
 
@@ -173,5 +193,61 @@ console.log(smart_api,"smartapi")
         res.status(500).send('Error fetching quotes: ' + err.message);
     }
 });
+const secret = '4IDW775MUHG3X762DUDTJAVRPM';
+
+// Generate TOTP dynamically
+const totp = otplib.authenticator.generate(secret);
+router.get("/check",async(req,res)=>{
+    // console.log(smart_api,"smart pai")
+    try {
+        // First, generate a session (if not already done)
+        const sessionData = await smart_api.generateSession('S61423336', '0299', totp); // Replace 'YOUR_TOTP' with your actual TOTP if needed
+        console.log(sessionData,"sessiondata")
+        if (!sessionData || !sessionData.data || !sessionData.data.jwtToken) {
+            return res.status(400).json({ message: 'Failed to generate session' });
+        }
+
+        // Now, call the marketData function
+        const marketDataResponse = await smart_api.marketData({
+            exchangeTokens: {
+                NSE: ["3045"] // Replace with your actual exchange tokens
+            }
+        });
+
+        // Check the response
+        console.log(marketDataResponse,"market data response")
+        if (marketDataResponse.success) {
+            // Successfully received market data
+            return res.status(200).json(marketDataResponse.data);
+        } else {
+            // Handle failure case
+            console.log("else in")
+            return res.status(400).json({ message: marketDataResponse.message });
+        }
+    } catch (error) {
+        console.error('Error fetching market data:', error.message);
+        return res.status(500).json({ message: 'An error occurred', error: error.message });
+    };
+})
+
+
+// TO HANDLE SESSION EXPIRY, USERS CAN PROVIDE A CUSTOM FUNCTION AS PARAMETER TO setSessionExpiryHook METHOD
+smart_api.setSessionExpiryHook(customSessionHook);
+
+function customSessionHook() {
+	console.log('User loggedout');
+
+	// NEW AUTHENTICATION CAN TAKE PLACE HERE
+}
+
+
+
+
+
+
+
+
+
+
 
 module.exports = router;
